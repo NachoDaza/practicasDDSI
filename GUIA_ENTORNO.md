@@ -162,3 +162,7 @@ conn.close()
 ```
 
 Hecho por IGNACIO J. DAZA ROMERO.
+(*) Script de python realizado con ayuda de GenAI siguiendo esquema mostrado por el profesor en diapositivas (crusor, conn).
+(*) Cómo registrar el driver  ODBC en unix: https://www.ibm.com/docs/es/db2/11.5.x?topic=environment-setting-up-odbc-linux-unix
+(*) Creación de entornos virtuales: https://docs.python.org/es/3.8/library/venv.html
+(*) Descargar e instalar Oracle Instant Client: https://www.oracle.com/es/database/technologies/instant-client/linux-x86-64-downloads.html
