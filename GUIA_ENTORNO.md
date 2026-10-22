@@ -20,7 +20,6 @@ Cómo dejar listo el entorno para conectar desde Python con el servidor Oracle d
 >
 > # 5. Comprobar entorno (seminario1) y credenciales cargadas echo $ORACLE_USER
 > ```
->
 
 ## DATOS CONEXIÓN
 
@@ -46,7 +45,6 @@ sudo apt install -y python3 python3-venv python3-pip unixodbc unixodbc-dev odbci
 ## 3. Entorno virtual
 
 El entorno se crea **fuera del repositorio**. 
-
 ```bash
 python3 -m venv ~/.venvs/seminario1
 source ~/.venvs/seminario1/bin/activate
@@ -55,7 +53,6 @@ source ~/.venvs/seminario1/bin/activate
 ## 4. Instalar las dependencias
 
 Con el entorno activo, desde la carpeta del repo:
-
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -63,7 +60,6 @@ python -c "import pyodbc; print(pyodbc.version)"
 ```
 
 Si falla al compilar `pyodbc`:
-
 ```bash
 sudo apt install -y build-essential python3-dev
 pip install -r requirements.txt
@@ -72,7 +68,6 @@ pip install -r requirements.txt
 ## 5. Comprobar que hay red hasta el servidor
 
 Con la VPN activa (en WSL, la VPN de Windows):
-
 ```bash
 sudo apt install -y netcat-openbsd
 nc -zv -w 5 oracle0.ugr.es 1521
@@ -84,7 +79,6 @@ nc -zv -w 5 oracle0.ugr.es 1521
    - **Basic Package**
    - **ODBC Package**
 2. Descomprimir en `/opt/oracle`. En mi caso es `/mnt/c/Users/ignac/Downloads`.
-
 ```bash
 sudo apt install -y unzip libaio1
 sudo mkdir -p /opt/oracle
@@ -95,14 +89,12 @@ ls /opt/oracle
 ```
 
 ## 7. Registrar el driver ODBC
-
 ```bash
 IC=$(ls -d /opt/oracle/instantclient_*)
 echo $IC
 ```
 
 Que Ubuntu encuentre las librerías de Oracle:
-
 ```bash
 echo $IC | sudo tee /etc/ld.so.conf.d/oracle-instantclient.conf
 sudo ldconfig
@@ -110,7 +102,6 @@ ldd $IC/libsqora.so.* | grep "not found"
 ```
 
 Registrar el driver en unixODBC:
-
 ```bash
 DRIVER_LIB=$(ls $IC/libsqora.so.* | head -n 1)
 sudo tee -a /etc/odbcinst.ini <<EOF
@@ -122,7 +113,6 @@ EOF
 ```
 
 Comprobar que Python lo ve (con el entorno activo):
-
 ```bash
 odbcinst -q -d
 python -c "import pyodbc; print(pyodbc.drivers())"
@@ -132,21 +122,18 @@ Debe salir `['OracleODBC']`.
 
 ## 8. Credenciales 
 
-Cada persona usa **su propio usuario y contraseña** de Oracle. Se guardan en un fichero `.env` que está en el `.gitignore`.
-
+Cada uno su propio user y password de Oracle. Se guardan en un fichero `.env` que está en el `.gitignore`.
 ```bash
 nano .env
 ```
 
 Contenido:
-
 ```
 ORACLE_USER=tu_usuario
 ORACLE_PASS='tu_contraseña'
 ```
 
 Comprobar que Git lo ignora:
-
 ```bash
 git status
 ```
@@ -157,8 +144,6 @@ git status
 set -a; source .env; set +a
 python test_conexion.py
 ```
-
-Debe imprimir `conexion ok`. El script es:
 
 ```python
 import os
@@ -176,4 +161,4 @@ print(cur.fetchone()[0])
 conn.close()
 ```
 
-HECHO POR IGNACIO J. DAZA ROMERO
+Hecho por IGNACIO J. DAZA ROMERO.
