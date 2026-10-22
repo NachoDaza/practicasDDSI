@@ -51,18 +51,19 @@ def alta_pedido(conn):
 
             # Insertar el nuevo detalles de pedido en la base de datos
             cursor.execute(
-                "INSERT INTO Detalle_Pedido (id_pedido, id_producto, cantidad) "
+                "INSERT INTO Detalle_Pedido (Cpedido, Cproducto, Cantidad) "
                 "VALUES (?, ?, ?)",
                 (id_pedido, id_producto, cantidad)
             )
 
         elif opcion == "2":
-            cursor.execute("DELETE FROM Detalle_Pedido WHERE id_pedido = ?", (id_pedido,))
+            # Eliminar todos los detalles de un pedido
+            cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
             conn.commit()
             print("Todos los detalles del pedido han sido eliminados.")
         elif opcion == "3":
-            cursor.execute("DELETE FROM Detalle_Pedido WHERE id_pedido = ?", (id_pedido,))
-            cursor.execute("DELETE FROM Pedido WHERE id_pedido = ?", (id_pedido,))
+            cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
+            cursor.execute("DELETE FROM Pedido WHERE Cpedido = ?", (id_pedido,))
             conn.commit()
             print("Pedido cancelado.")
         elif opcion == "4":
@@ -143,6 +144,50 @@ def introducir_tuplas(cursor):
     except pyodbc.DatabaseError:
         print("No se pudieron insertar las tuplas en la tabla Stock.\n")
 
+def mostrar_tablas(cursor):
+    try:
+        cursor.execute("SELECT * FROM Stock")
+        rows = cursor.fetchall()
+        print("\n=================== TABLA STOCK ===================")
+        print(f"{'Cproducto':<12} | {'Cantidad':<10}")
+        print("-" * 27)
+        if rows:
+            for row in rows:
+                print(f"{row[0]:<12} | {row[1]:<10}")
+        else:
+            print("La tabla está vacía.")
+    except pyodbc.DatabaseError:
+        print("No se pudo mostrar la tabla Stock.\n")
+
+    try:
+        cursor.execute("SELECT * FROM Pedido")
+        rows = cursor.fetchall()
+        print("\n=================== TABLA PEDIDO ===================")
+        print(f"{'Cpedido':<10} | {'Ccliente':<10} | {'Fecha_pedido':<12}")
+        print("-" * 40)
+        if rows:
+            for row in rows:
+                fecha = str(row[2])[:10] if row[2] else ""
+                print(f"{row[0]:<10} | {row[1]:<10} | {fecha:<12}")
+        else:
+            print("La tabla está vacía.")
+    except pyodbc.DatabaseError:
+        print("No se pudo mostrar la tabla Pedido.\n")
+
+    try:
+        cursor.execute("SELECT * FROM Detalle_Pedido")
+        rows = cursor.fetchall()
+        print("\n=============== TABLA DETALLE_PEDIDO ===============")
+        print(f"{'Cpedido':<10} | {'Cproducto':<12} | {'Cantidad':<10}")
+        print("-" * 38)
+        if rows:
+            for row in rows:
+                print(f"{row[0]:<10} | {row[1]:<12} | {row[2]:<10}")
+        else:
+            print("La tabla está vacía.")
+    except pyodbc.DatabaseError:
+        print("No se pudo mostrar la tabla Detalle_Pedido.\n")
+
     
 def main():
     conn = iniciar_conexion()
@@ -157,6 +202,7 @@ def main():
                 alta_pedido(conn)
             elif opcion == "3":
                 print("Informacion de las tablas")
+                mostrar_tablas(cursor)
             elif opcion == "4":
                 break
             else:
