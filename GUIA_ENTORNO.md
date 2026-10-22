@@ -140,7 +140,7 @@ Hecho por IGNACIO J. DAZA ROMERO.
 
 DESGLOSE DEL TRABAJO REALIZADO:
 - Configuración entorno, PDF descriptivo y esqueleto principal en python: Ignacio J. Daza Romero.
-- 
+- Crear tabla, borrar tabla e insertar 10 tuplas: Daniel Martínez Jiménez.
 - 
 - 
 
