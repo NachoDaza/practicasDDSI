@@ -1,83 +1,64 @@
-# Guía de entorno: Python + Oracle (Seminario 1 DDSI)
+# Guía de entorno: Python + Oracle (Seminario 1 DDSI PRÁCTICAS - A3)
 
-Cómo dejar listo el entorno para conectar desde Python con el servidor Oracle de la ETSIIT. Pensado para **Ubuntu 22.04** (nativo o en WSL).
+Cómo configurar el entorno usando Python con el servidor Oracle. Para Ubuntu 22.04 nativo o WSL.
+- Lenguaje: Python 3.
+- Conexión: ODBC con `pyodbc` + Oracle Instant Client.
+- Servidor: `oracle0.ugr.es`, puerto `1521`, servicio `practbd`.
+- Hace falta conectarse desde la la VPN de la UGR o desde Eduroam.
 
-> ## CADA VEZ QUE ABRO UNA TERMINAL NUEVA
->
-> Repetir **estos 5 pasos** antes de ejecutar el programa:
->
-> ```bash
-> # 1. Entrar en la carpeta del repositorio 
-> cd /mnt/c/Users/ignac/Desktop/DDSI/practicasDDSI
->
-> # 2. Activar el entorno virtual
-> source ~/.venvs/seminario1/bin/activate
->
-> # 3. Cargar credenciales del fichero .env
-> set -a; source .env; set +a
->
-> # 4. Activar VPN / Eduroam para conectar Oracle.
->
-> # 5. Comprobar entorno (seminario1) y credenciales cargadas echo $ORACLE_USER
-> ```
-
-## DATOS CONEXIÓN
-
-- Lenguaje: Python 3
-- Conexión: ODBC con `pyodbc` + Oracle Instant Client
-- Servidor: `oracle0.ugr.es`, puerto `1521`, servicio `practbd`
-- Hace falta estar en la **VPN de la UGR** o en Eduroam
-
-## 1. Entrar en el repositorio
-
+Recordatorio: cada vez que se abre una nueva terminal o sesión repetir estos 5 pasos:
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+# 1. Entrar en la carpeta del repositorio.
+cd /mnt/c/Users/ignac/Desktop/DDSI/practicasDDSI
+
+# 2. Activar el entorno virtual.
+source ~/.venvs/seminario1/bin/activate
+
+# 3. Cargar credenciales del fichero .env
+set -a; source .env; set +a
+
+# 4. Activar VPN / Eduroam para conectar Oracle.
+
+# 5. Comprobar entorno (seminario1) y credenciales cargadas echo $ORACLE_USER
+```
+
+## 1. Entrar en el repositorio.
+```bash
+git clone git@github.com:NachoDaza/practicasDDSI.git
 cd <carpeta_del_repositorio>
 ```
 
-## 2. Paquetes del sistema
-
+## 2. Paquetes del sistema.
 ```bash
 sudo apt update
 sudo apt install -y python3 python3-venv python3-pip unixodbc unixodbc-dev odbcinst
 ```
 
-## 3. Entorno virtual
-
-El entorno se crea **fuera del repositorio**. 
+## 3. Crear entorno virtual fuera del repositorio.
 ```bash
 python3 -m venv ~/.venvs/seminario1
 source ~/.venvs/seminario1/bin/activate
 ```
 
-## 4. Instalar las dependencias
-
-Con el entorno activo, desde la carpeta del repo:
+## 4. Instalar las dependencias desde la carpeta del repositorio.
 ```bash
 pip install --upgrade pip
+sudo apt install -y build-essential python3-dev
 pip install -r requirements.txt
 python -c "import pyodbc; print(pyodbc.version)"
 ```
 
-Si falla al compilar `pyodbc`:
-```bash
-sudo apt install -y build-essential python3-dev
-pip install -r requirements.txt
-```
-
-## 5. Comprobar que hay red hasta el servidor
-
-Con la VPN activa (en WSL, la VPN de Windows):
+## 5. Comprobar conexión red con el servidor.
 ```bash
 sudo apt install -y netcat-openbsd
 nc -zv -w 5 oracle0.ugr.es 1521
 ```
 
-## 6. Descargar e instalar Oracle Instant Client
+## 6. Descargar e instalar Oracle Instant Client.
 
-1. En la web de Oracle, en la página de descargas de **Instant Client para Linux x86-64**, descargaR dos ZIP de la **misma versión**:
    - **Basic Package**
    - **ODBC Package**
+     
 2. Descomprimir en `/opt/oracle`. En mi caso es `/mnt/c/Users/ignac/Downloads`.
 ```bash
 sudo apt install -y unzip libaio1
@@ -88,7 +69,7 @@ sudo unzip 'instantclient-odbc*.zip' -d /opt/oracle
 ls /opt/oracle
 ```
 
-## 7. Registrar el driver ODBC
+## 7. Registrar el driver ODBC.
 ```bash
 IC=$(ls -d /opt/oracle/instantclient_*)
 echo $IC
@@ -120,15 +101,10 @@ python -c "import pyodbc; print(pyodbc.drivers())"
 
 Debe salir `['OracleODBC']`.
 
-## 8. Credenciales 
+## 8. Configurar credenciales "user" y "password" de Oracle. Guardar en fichero `.env` que está en el `.gitignore`.
 
-Cada uno su propio user y password de Oracle. Se guardan en un fichero `.env` que está en el `.gitignore`.
 ```bash
 nano .env
-```
-
-Contenido:
-```
 ORACLE_USER=tu_usuario
 ORACLE_PASS='tu_contraseña'
 ```
@@ -138,8 +114,7 @@ Comprobar que Git lo ignora:
 git status
 ```
 
-## 9. Prueba de conexión
-
+## 9. Probar conexión.
 ```bash
 set -a; source .env; set +a
 python test_conexion.py
