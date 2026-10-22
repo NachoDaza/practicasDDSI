@@ -138,6 +138,13 @@ conn.close()
 
 Hecho por IGNACIO J. DAZA ROMERO.
 
+DESGLOSE DEL TRABAJO REALIZADO:
+- Configuración entorno, PDF descriptivo y esqueleto principal en python: Ignacio J. Daza Romero.
+- 
+- 
+- 
+
+DOCUMENTACIÓN:
 (*) Script de python realizado con ayuda de GenAI siguiendo esquema mostrado por el profesor en diapositivas (crusor, conn).
 
 (*) Cómo registrar el driver  ODBC en unix: https://www.ibm.com/docs/es/db2/11.5.x?topic=environment-setting-up-odbc-linux-unix
