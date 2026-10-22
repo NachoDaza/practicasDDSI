@@ -45,21 +45,28 @@ def alta_pedido(conn):
         if opcion == "1":
             id_producto = input("Ingrese el ID del producto: ")
             cantidad = int(input("Ingrese la cantidad: "))
+
+            # Comprobar que hay stock antes de insertar
+
+
             # Insertar el nuevo detalles de pedido en la base de datos
             cursor.execute(
                 "INSERT INTO detalles_pedido (id_pedido, id_producto, cantidad) "
                 "VALUES (?, ?, ?)",
                 (id_pedido, id_producto, cantidad)
             )
+
         elif opcion == "2":
             cursor.execute("DELETE FROM detalles_pedido WHERE id_pedido = ?", (id_pedido,))
             conn.commit()
             print("Todos los detalles del pedido han sido eliminados.")
         elif opcion == "3":
+            cursor.execute("DELETE FROM detalles_pedido WHERE id_pedido = ?", (id_pedido,))
             cursor.execute("DELETE FROM pedidos WHERE id_pedido = ?", (id_pedido,))
             conn.commit()
             print("Pedido cancelado.")
         elif opcion == "4":
+            # Hacer cambios permanentes.
             print("Pedido finalizado.")
         else:
             print("Opcion invalida. Volviendo al menu principal.")
@@ -67,6 +74,67 @@ def alta_pedido(conn):
     finally:
         print("Cerrando cursor de alta_pedido.")
 
+
+def gestion_tablas(cursor):
+
+    borrar_tablas(cursor)
+    crear_tablas(cursor)
+           
+   
+def borrar_tablas(cursor):
+    try:
+        cursor.execute("DROP TABLE Detalle_Pedido")    
+    except pyodbc.DatabaseError:
+        print("No se pudo borrar la tabla o no existe.\n")
+
+    try:
+        cursor.execute("DROP TABLE Pedido")    
+    except pyodbc.DatabaseError:
+        print("No se pudo borrar la tabla o no existe.\n")
+
+    try:
+        cursor.execute("DROP TABLE Stock")    
+    except pyodbc.DatabaseError:
+        print("No se pudo borrar la tabla o no existe.\n") 
+
+def crear_tablas(cursor):
+
+    try:
+        cursor.execute("""
+            CREATE TABLE Stock (
+                Cproducto NUMBER PRIMARY KEY,
+                Cantidad NUMBER
+            )
+        """)
+    except pyodbc.DatabaseError:
+        print("La tabla Stock ya existe o no se pudo crear.\n")
+
+    try:
+        cursor.execute("""
+            CREATE TABLE Pedido (
+                Cpedido NUMBER PRIMARY KEY,
+                Ccliente NUMBER,
+                Fecha-pedido DATE
+            )
+        """)
+    except pyodbc.DatabaseError:
+        print("La tabla Stock ya existe o no se pudo crear.\n")
+
+    try:
+        cursor.execute("""
+            CREATE TABLE Detalle_Pedido (
+                Cpedido NUMBER,
+                Cproducto NUMBER,
+                Cantidad NUMBER,
+                PRIMARY KEY (Cpedido, Cproducto),
+                FOREIGN KEY (Cpedido) REFERENCES Pedido(Cpedido),
+                FOREIGN KEY (Cproducto) REFERENCES Stock(Cproducto)
+            )
+        """)
+    except pyodbc.DatabaseError:
+        print("La tabla Stock ya existe o no se pudo crear.\n")
+
+    
 def main():
     conn = iniciar_conexion()
     cursor = conn.cursor()
