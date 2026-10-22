@@ -28,8 +28,8 @@ def alta_pedido(conn):
 
         # Insertar el nuevo pedido en la base de datos
         cursor.execute(
-            "INSERT INTO pedidos (id_pedido, id_cliente, fecha_pedido) "
-            "VALUES (?, ?, ?)",
+            "INSERT INTO Pedido (Cpedido, Ccliente, Fecha_pedido) "
+            "VALUES (?, ?, TO_DATE(?, 'YYYY-MM-DD'))",
             (id_pedido, id_cliente, fecha_pedido)
         )
         conn.commit()
@@ -51,18 +51,18 @@ def alta_pedido(conn):
 
             # Insertar el nuevo detalles de pedido en la base de datos
             cursor.execute(
-                "INSERT INTO detalles_pedido (id_pedido, id_producto, cantidad) "
+                "INSERT INTO Detalle_Pedido (id_pedido, id_producto, cantidad) "
                 "VALUES (?, ?, ?)",
                 (id_pedido, id_producto, cantidad)
             )
 
         elif opcion == "2":
-            cursor.execute("DELETE FROM detalles_pedido WHERE id_pedido = ?", (id_pedido,))
+            cursor.execute("DELETE FROM Detalle_Pedido WHERE id_pedido = ?", (id_pedido,))
             conn.commit()
             print("Todos los detalles del pedido han sido eliminados.")
         elif opcion == "3":
-            cursor.execute("DELETE FROM detalles_pedido WHERE id_pedido = ?", (id_pedido,))
-            cursor.execute("DELETE FROM pedidos WHERE id_pedido = ?", (id_pedido,))
+            cursor.execute("DELETE FROM Detalle_Pedido WHERE id_pedido = ?", (id_pedido,))
+            cursor.execute("DELETE FROM Pedido WHERE id_pedido = ?", (id_pedido,))
             conn.commit()
             print("Pedido cancelado.")
         elif opcion == "4":
@@ -79,6 +79,7 @@ def gestion_tablas(cursor):
 
     borrar_tablas(cursor)
     crear_tablas(cursor)
+    introducir_tuplas(cursor)
            
    
 def borrar_tablas(cursor):
@@ -114,11 +115,11 @@ def crear_tablas(cursor):
             CREATE TABLE Pedido (
                 Cpedido NUMBER PRIMARY KEY,
                 Ccliente NUMBER,
-                Fecha-pedido DATE
+                Fecha_pedido DATE
             )
         """)
     except pyodbc.DatabaseError:
-        print("La tabla Stock ya existe o no se pudo crear.\n")
+        print("La tabla Pedido ya existe o no se pudo crear.\n")
 
     try:
         cursor.execute("""
@@ -132,7 +133,15 @@ def crear_tablas(cursor):
             )
         """)
     except pyodbc.DatabaseError:
-        print("La tabla Stock ya existe o no se pudo crear.\n")
+        print("La tabla Detalle_Pedido ya existe o no se pudo crear.\n")
+
+def introducir_tuplas(cursor):
+    try:
+        for i in range(1, 11):
+            cursor.execute("INSERT INTO Stock (Cproducto, Cantidad) VALUES (?, ?)", (i, 100))
+        print("Se han insertado 10 tuplas en la tabla Stock.")
+    except pyodbc.DatabaseError:
+        print("No se pudieron insertar las tuplas en la tabla Stock.\n")
 
     
 def main():
@@ -143,6 +152,7 @@ def main():
             opcion = visualizar_menu()
             if opcion == "1":
                 print("Borrado de tablas / Creacion de tablas / Insercion 10 tuplas")
+                gestion_tablas(cursor)
             elif opcion == "2":
                 alta_pedido(conn)
             elif opcion == "3":
