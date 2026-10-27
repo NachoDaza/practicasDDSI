@@ -19,61 +19,104 @@ def visualizar_menu():
     return input("\nOpcion: ").strip()
 
 def alta_pedido(conn):
+
+    cursor = None
+
     try:
         cursor = conn.cursor()
         # Solicitar datos del pedido al usuario
-        id_pedido = input("Ingrese el ID del pedido: ")
-        id_cliente = input("Ingrese el ID del cliente: ")
-        fecha_pedido = input("Ingrese la fecha del pedido (YYYY-MM-DD): ")
+        id_pedido = input("\nIngrese el ID del pedido: ")
+        id_cliente = input("\nIngrese el ID del cliente: ")
+        fecha_pedido = input("\nIngrese la fecha del pedido (YYYY-MM-DD): ")
 
         # Insertar el nuevo pedido en la base de datos
-        cursor.execute(
-            "INSERT INTO Pedido (Cpedido, Ccliente, Fecha_pedido) "
-            "VALUES (?, ?, TO_DATE(?, 'YYYY-MM-DD'))",
-            (id_pedido, id_cliente, fecha_pedido)
-        )
-        conn.commit()
-        print("Pedido agregado exitosamente.")
-
-        print("\n=========== MENU DAR DE ALTA NUEVO PEDIDO ===========")
-        print("\n1. Aniadir detalle de producto.")
-        print("\n2. Eliminar todos los detalles de producto.")
-        print("\n3. Cancelar pedido.")
-        print("\n4. Finalizar pedido.")
-        opcion = input("\nOpcion: ").strip()
-
-        if opcion == "1":
-            id_producto = input("Ingrese el ID del producto: ")
-            cantidad = int(input("Ingrese la cantidad: "))
-
-            # Comprobar que hay stock antes de insertar
-
-
-            # Insertar el nuevo detalles de pedido en la base de datos
+        try:
             cursor.execute(
-                "INSERT INTO Detalle_Pedido (Cpedido, Cproducto, Cantidad) "
-                "VALUES (?, ?, ?)",
-                (id_pedido, id_producto, cantidad)
+                "INSERT INTO Pedido (Cpedido, Ccliente, Fecha_pedido) "
+                "VALUES (?, ?, TO_DATE(?, 'YYYY-MM-DD'))",
+                (id_pedido, id_cliente, fecha_pedido)
             )
+            conn.commit()
+            print("\nPedido agregado exitosamente.")
+        except pyodbc.DatabaseError:
+            conn.rollback()
+            print("\nError en la creacion del pedido. Abortando operacion.")
+            return
 
-        elif opcion == "2":
-            # Eliminar todos los detalles de un pedido
-            cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
-            conn.commit()
-            print("Todos los detalles del pedido han sido eliminados.")
-        elif opcion == "3":
-            cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
-            cursor.execute("DELETE FROM Pedido WHERE Cpedido = ?", (id_pedido,))
-            conn.commit()
-            print("Pedido cancelado.")
-        elif opcion == "4":
-            # Hacer cambios permanentes.
-            print("Pedido finalizado.")
-        else:
-            print("Opcion invalida. Volviendo al menu principal.")
+        while True:
+            print("\n=========== MENU DAR DE ALTA NUEVO PEDIDO ===========")
+            print("\n1. Aniadir detalle de producto.")
+            print("\n2. Eliminar todos los detalles de producto.")
+            print("\n3. Cancelar pedido.")
+            print("\n4. Finalizar pedido.")
+            opcion = input("\nOpcion: ").strip()
+
+            if opcion == "1":
+                id_producto = int(input("Ingrese el ID del producto: "))
+                cantidad = int(input("Ingrese la cantidad: "))
+
+                # Comprobar que hay stock antes de insertar
+
+                stock_cantidad = cursor.execute("SELECT Cantidad FROM Stock where Cproducto = ?", (id_producto,)).fetchval()
+
+                if stock_cantidad != None and cantidad > 0 and cantidad <= stock_cantidad:
+
+                    # Insertar el nuevo detalles de pedido en la base de datos
+                    try:
+                        cursor.execute(
+                        "INSERT INTO Detalle_Pedido (Cpedido, Cproducto, Cantidad) "
+                        "VALUES (?, ?, ?)",
+                        (id_pedido, id_producto, cantidad)
+                        )
+                        conn.commit()
+                    # Ocurre una excepción.
+                    except pyodbc.DatabaseError:
+                        conn.rollback()
+                        print("\nError en la insercion.")
+
+                # Error en la cantidad o el stock.
+                else:
+                    if cantidad <= 0:
+                        print("\nPor favor, inserte una cantidad positiva.")
+                    else:
+                        print("\nEl producto no existe o no hay stock.")
+
+            elif opcion == "2":
+                # Eliminar todos los detalles de un pedido
+                try:
+                    cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
+                    conn.commit()
+                    print("\nTodos los detalles del pedido han sido eliminados.")
+                except pyodbc.DatabaseError:
+                    conn.rollback()
+                    print("\nError en la eliminacion.")
+
+            elif opcion == "3":
+
+                try:  
+                    cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
+                    cursor.execute("DELETE FROM Pedido WHERE Cpedido = ?", (id_pedido,))
+                    conn.commit()
+                    print("\nPedido cancelado.")
+                    return
+                except pyodbc.DatabaseError:
+                    conn.rollback()
+                    print("\nError en la cancelacion.")
+
+            elif opcion == "4":
+                # Hacer cambios permanentes.
+                print("\nPedido finalizado.")
+                return
+
+            else:
+                print("\nOpcion invalida.")
+
 
     finally:
-        print("Cerrando cursor de alta_pedido.")
+
+        if cursor != None:
+            cursor.close()
+            print("\nCerrando cursor de alta_pedido.")
 
 
 def gestion_tablas(cursor):
@@ -87,17 +130,17 @@ def borrar_tablas(cursor):
     try:
         cursor.execute("DROP TABLE Detalle_Pedido")    
     except pyodbc.DatabaseError:
-        print("No se pudo borrar la tabla o no existe.\n")
+        print("\nNo se pudo borrar la tabla o no existe.")
 
     try:
         cursor.execute("DROP TABLE Pedido")    
     except pyodbc.DatabaseError:
-        print("No se pudo borrar la tabla o no existe.\n")
+        print("\nNo se pudo borrar la tabla o no existe.")
 
     try:
         cursor.execute("DROP TABLE Stock")    
     except pyodbc.DatabaseError:
-        print("No se pudo borrar la tabla o no existe.\n") 
+        print("\nNo se pudo borrar la tabla o no existe.") 
 
 def crear_tablas(cursor):
 
@@ -109,7 +152,7 @@ def crear_tablas(cursor):
             )
         """)
     except pyodbc.DatabaseError:
-        print("La tabla Stock ya existe o no se pudo crear.\n")
+        print("\nLa tabla Stock ya existe o no se pudo crear.")
 
     try:
         cursor.execute("""
@@ -120,7 +163,7 @@ def crear_tablas(cursor):
             )
         """)
     except pyodbc.DatabaseError:
-        print("La tabla Pedido ya existe o no se pudo crear.\n")
+        print("\nLa tabla Pedido ya existe o no se pudo crear.")
 
     try:
         cursor.execute("""
@@ -134,15 +177,17 @@ def crear_tablas(cursor):
             )
         """)
     except pyodbc.DatabaseError:
-        print("La tabla Detalle_Pedido ya existe o no se pudo crear.\n")
+        print("\nLa tabla Detalle_Pedido ya existe o no se pudo crear.")
 
 def introducir_tuplas(cursor):
     try:
         for i in range(1, 11):
             cursor.execute("INSERT INTO Stock (Cproducto, Cantidad) VALUES (?, ?)", (i, 100))
-        print("Se han insertado 10 tuplas en la tabla Stock.")
+        print("\nSe han insertado 10 tuplas en la tabla Stock.")
+        conn.commit()
     except pyodbc.DatabaseError:
-        print("No se pudieron insertar las tuplas en la tabla Stock.\n")
+        conn.rollback()
+        print("\nNo se pudieron insertar las tuplas en la tabla Stock.")
 
 def mostrar_tablas(cursor):
     try:
@@ -155,9 +200,9 @@ def mostrar_tablas(cursor):
             for row in rows:
                 print(f"{row[0]:<12} | {row[1]:<10}")
         else:
-            print("La tabla está vacía.")
+            print("\nLa tabla está vacía.")
     except pyodbc.DatabaseError:
-        print("No se pudo mostrar la tabla Stock.\n")
+        print("\nNo se pudo mostrar la tabla Stock.")
 
     try:
         cursor.execute("SELECT * FROM Pedido")
@@ -170,9 +215,9 @@ def mostrar_tablas(cursor):
                 fecha = str(row[2])[:10] if row[2] else ""
                 print(f"{row[0]:<10} | {row[1]:<10} | {fecha:<12}")
         else:
-            print("La tabla está vacía.")
+            print("\nLa tabla está vacía.")
     except pyodbc.DatabaseError:
-        print("No se pudo mostrar la tabla Pedido.\n")
+        print("\nNo se pudo mostrar la tabla Pedido.")
 
     try:
         cursor.execute("SELECT * FROM Detalle_Pedido")
@@ -184,9 +229,9 @@ def mostrar_tablas(cursor):
             for row in rows:
                 print(f"{row[0]:<10} | {row[1]:<12} | {row[2]:<10}")
         else:
-            print("La tabla está vacía.")
+            print("\nLa tabla está vacía.")
     except pyodbc.DatabaseError:
-        print("No se pudo mostrar la tabla Detalle_Pedido.\n")
+        print("\nNo se pudo mostrar la tabla Detalle_Pedido.")
 
     
 def main():
@@ -196,21 +241,21 @@ def main():
         while True:
             opcion = visualizar_menu()
             if opcion == "1":
-                print("Borrado de tablas / Creacion de tablas / Insercion 10 tuplas")
+                print("\nBorrado de tablas / Creacion de tablas / Insercion 10 tuplas")
                 gestion_tablas(cursor)
             elif opcion == "2":
                 alta_pedido(conn)
             elif opcion == "3":
-                print("Informacion de las tablas")
+                print("\nInformacion de las tablas")
                 mostrar_tablas(cursor)
             elif opcion == "4":
                 break
             else:
-                print("Error. Opcion invalida.")
+                print("\nOpcion invalida.")
     finally:
         cursor.close()
         conn.close()
-        print("Fin de la conexion.")
+        print("\nFin de la conexion.")
 
 
 if __name__ == "__main__":
