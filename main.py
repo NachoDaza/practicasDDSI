@@ -119,11 +119,12 @@ def alta_pedido(conn):
             print("\nCerrando cursor de alta_pedido.")
 
 
-def gestion_tablas(cursor):
+def gestion_tablas(conn):
+    cursor = conn.cursor()
 
     borrar_tablas(cursor)
     crear_tablas(cursor)
-    introducir_tuplas(cursor)
+    introducir_tuplas(conn)
            
    
 def borrar_tablas(cursor):
@@ -179,7 +180,8 @@ def crear_tablas(cursor):
     except pyodbc.DatabaseError:
         print("\nLa tabla Detalle_Pedido ya existe o no se pudo crear.")
 
-def introducir_tuplas(cursor):
+def introducir_tuplas(conn):
+    cursor = conn.cursor()
     try:
         for i in range(1, 11):
             cursor.execute("INSERT INTO Stock (Cproducto, Cantidad) VALUES (?, ?)", (i, 100))
@@ -242,7 +244,7 @@ def main():
             opcion = visualizar_menu()
             if opcion == "1":
                 print("\nBorrado de tablas / Creacion de tablas / Insercion 10 tuplas")
-                gestion_tablas(cursor)
+                gestion_tablas(conn)
             elif opcion == "2":
                 alta_pedido(conn)
             elif opcion == "3":
