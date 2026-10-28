@@ -82,7 +82,7 @@ def alta_pedido(conn):
                     if cantidad <= 0:
                         print("\nPor favor, inserte una cantidad positiva.")
                     else:
-                        if stock_cantidad = None:
+                        if stock_cantidad == None:
                             print("\nEl producto no existe.")
                         else:
                             print("\nNo hay stock suficiente del producto.")
