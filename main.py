@@ -11,6 +11,7 @@ def iniciar_conexion():
 
 
 def visualizar_menu():
+    
     print("\n=========== MENU PRINCIPAL ===========")
     print("\n1. Borrar tablas/Crear tablas/Insertar 10 tuplas.")
     print("\n2. Dar de alta nuevo pedido.")
@@ -37,6 +38,7 @@ def alta_pedido(conn):
                 (id_pedido, id_cliente, fecha_pedido)
             )
             conn.commit()
+            os.system('cls' if os.name == 'nt' else 'clear')
             print("\nPedido agregado exitosamente.")
         except pyodbc.DatabaseError:
             conn.rollback()
@@ -72,6 +74,8 @@ def alta_pedido(conn):
                             "UPDATE Stock SET Cantidad = ? WHERE Cproducto = ?", (stock_cantidad - cantidad, id_producto)
                         )
                         conn.commit()
+                        os.system('cls' if os.name == 'nt' else 'clear')
+                        print("\nDetalle de producto agregado exitosamente.")
                     # Ocurre una excepción.
                     except pyodbc.DatabaseError:
                         conn.rollback()
@@ -92,6 +96,7 @@ def alta_pedido(conn):
                 try:
                     cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
                     conn.commit()
+                    os.system('cls' if os.name == 'nt' else 'clear')
                     print("\nTodos los detalles del pedido han sido eliminados.")
                 except pyodbc.DatabaseError:
                     conn.rollback()
@@ -103,6 +108,7 @@ def alta_pedido(conn):
                     cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
                     cursor.execute("DELETE FROM Pedido WHERE Cpedido = ?", (id_pedido,))
                     conn.commit()
+                    os.system('cls' if os.name == 'nt' else 'clear')
                     print("\nPedido cancelado.")
                     return
                 except pyodbc.DatabaseError:
@@ -111,6 +117,7 @@ def alta_pedido(conn):
 
             elif opcion == "4":
                 # Hacer cambios permanentes.
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("\nPedido finalizado.")
                 return
 
@@ -249,14 +256,19 @@ def main():
         while True:
             opcion = visualizar_menu()
             if opcion == "1":
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("\nBorrado de tablas / Creacion de tablas / Insercion 10 tuplas")
                 gestion_tablas(conn)
             elif opcion == "2":
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("\nDar de alta nuevo pedido")
                 alta_pedido(conn)
             elif opcion == "3":
+                os.system('cls' if os.name == 'nt' else 'clear')
                 print("\nInformacion de las tablas")
                 mostrar_tablas(cursor)
             elif opcion == "4":
+                os.system('cls' if os.name == 'nt' else 'clear')
                 break
             else:
                 print("\nOpcion invalida.")
