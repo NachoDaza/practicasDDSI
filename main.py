@@ -75,7 +75,7 @@ def alta_pedido(conn):
                         cursor.execute(
                             "UPDATE Stock SET Cantidad = ? WHERE Cproducto = ?", (stock_cantidad - cantidad, id_producto)
                         )
-                        conn.commit()
+
                         os.system('cls' if os.name == 'nt' else 'clear')
                         print("\nDetalle de producto agregado exitosamente.")
                     # Ocurre una excepción.
@@ -111,7 +111,7 @@ def alta_pedido(conn):
                     
                     cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
                     cursor.execute("DELETE FROM Pedido WHERE Cpedido = ?", (id_pedido,))
-                    conn.commit()
+                    
                     os.system('cls' if os.name == 'nt' else 'clear')
                     print("\nPedido cancelado.")
                     return
