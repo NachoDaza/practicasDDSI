@@ -57,7 +57,7 @@ def alta_pedido(conn):
 
                 # Comprobar que hay stock antes de insertar
 
-                stock_cantidad = cursor.execute("SELECT Cantidad FROM Stock where Cproducto = ?", (id_producto,)).fetchval()
+                stock_cantidad = cursor.execute("SELECT Cantidad FROM Stock WHERE Cproducto = ?", (id_producto,)).fetchval()
 
                 if stock_cantidad != None and cantidad > 0 and cantidad <= stock_cantidad:
 
@@ -68,18 +68,24 @@ def alta_pedido(conn):
                         "VALUES (?, ?, ?)",
                         (id_pedido, id_producto, cantidad)
                         )
+                        cursor.execute(
+                            "UPDATE Stock SET Cantidad = ? WHERE Cproducto = ?", (stock_cantidad - cantidad, id_producto)
+                        )
                         conn.commit()
                     # Ocurre una excepción.
                     except pyodbc.DatabaseError:
                         conn.rollback()
-                        print("\nError en la insercion.")
+                        print("\nError en el anadido de producto.")
 
                 # Error en la cantidad o el stock.
                 else:
                     if cantidad <= 0:
                         print("\nPor favor, inserte una cantidad positiva.")
                     else:
-                        print("\nEl producto no existe o no hay stock.")
+                        if stock_cantidad = None:
+                            print("\nEl producto no existe.")
+                        else:
+                            print("\nNo hay stock suficiente del producto.")
 
             elif opcion == "2":
                 # Eliminar todos los detalles de un pedido
