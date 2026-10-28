@@ -40,6 +40,8 @@ def alta_pedido(conn):
             conn.commit()
             os.system('cls' if os.name == 'nt' else 'clear')
             print("\nPedido agregado exitosamente.")
+
+            cursor.execute("SAVEPOINT pedido_vacio_creado")
         except pyodbc.DatabaseError:
             conn.rollback()
             print("\nError en la creacion del pedido. Abortando operacion.")
@@ -105,6 +107,8 @@ def alta_pedido(conn):
             elif opcion == "3":
 
                 try:  
+                    cursor.execute("ROLLBACK TO pedido_vacio_creado")
+                    
                     cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
                     cursor.execute("DELETE FROM Pedido WHERE Cpedido = ?", (id_pedido,))
                     conn.commit()
