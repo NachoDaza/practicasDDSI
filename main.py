@@ -1,5 +1,6 @@
 import os
 import pyodbc
+from datetime import datetime
 
 def iniciar_conexion():
     cadena = (
@@ -28,14 +29,24 @@ def alta_pedido(conn):
         # Solicitar datos del pedido al usuario
         id_pedido = input("\nIngrese el ID del pedido: ")
         id_cliente = input("\nIngrese el ID del cliente: ")
-        fecha_pedido = input("\nIngrese la fecha del pedido (YYYY-MM-DD): ")
+
+        # Gestion del error de formato de fecha, para que el programa no se cierre
+        fecha_obj = None
+        while True:
+            fecha_pedido = input("\nIngrese la fecha del pedido (YYYY-MM-DD): ")
+            try:
+                # Intentamos convertir el texto introducido a un objeto fecha de Python
+                fecha_obj = datetime.strptime(fecha_pedido, "%Y-%m-%d").date()
+                break # Si funciona, salimos del bucle
+            except ValueError:
+                print("\nError: El formato de la fecha es incorrecto o esa fecha no existe. Por favor, use el formato YYYY-MM-DD (ej: 2026-10-22).")
 
         # Insertar el nuevo pedido en la base de datos
         try:
             cursor.execute(
                 "INSERT INTO Pedido (Cpedido, Ccliente, Fecha_pedido) "
-                "VALUES (?, ?, TO_DATE(?, 'YYYY-MM-DD'))",
-                (id_pedido, id_cliente, fecha_pedido)
+                "VALUES (?, ?, ?)",
+                (id_pedido, id_cliente, fecha_obj)
             )
             conn.commit()
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -96,8 +107,11 @@ def alta_pedido(conn):
             elif opcion == "2":
                 # Eliminar todos los detalles de un pedido
                 try:
-                    cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
-                    conn.commit()
+                    cursor.execute("ROLLBACK TO pedido_vacio_creado")
+
+                    # El savepoint se elimina si hacemos rollback, lo creamos
+                    # de nuevo por si hubiera que hacer rollback otra vez.
+                    cursor.execute("SAVEPOINT pedido_vacio_creado")
                     os.system('cls' if os.name == 'nt' else 'clear')
                     print("\nTodos los detalles del pedido han sido eliminados.")
                 except pyodbc.DatabaseError:
@@ -108,9 +122,9 @@ def alta_pedido(conn):
 
                 try:  
                     cursor.execute("ROLLBACK TO pedido_vacio_creado")
-                    
-                    cursor.execute("DELETE FROM Detalle_Pedido WHERE Cpedido = ?", (id_pedido,))
                     cursor.execute("DELETE FROM Pedido WHERE Cpedido = ?", (id_pedido,))
+
+                    conn.commit()
                     
                     os.system('cls' if os.name == 'nt' else 'clear')
                     print("\nPedido cancelado.")
@@ -121,9 +135,14 @@ def alta_pedido(conn):
 
             elif opcion == "4":
                 # Hacer cambios permanentes.
-                os.system('cls' if os.name == 'nt' else 'clear')
-                print("\nPedido finalizado.")
-                return
+                try:
+                    conn.commit()
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    print("\nPedido finalizado y guardado con éxito.")
+                    return
+                except pyodbc.DatabaseError:
+                    conn.rollback()
+                    print("\nError al guardar el pedido definitivo.")
 
             else:
                 print("\nOpcion invalida.")
