@@ -143,7 +143,7 @@ DESGLOSE DEL TRABAJO REALIZADO:
 - Dar de alta pedido (función): Ignacio J. Daza Romero.
 - Crear tabla, borrar tabla e insertar 10 tuplas: Daniel Martínez Jiménez.
 - Dar de alta pedido (comprobación de stock y casos de fallo), commits y rollback: Juan Fernando Luque Pérez.
-- 
+- Mostrar tablas y eliminación de errores de formato: Daniel Martínez Jiménez
 
 DOCUMENTACIÓN:
 (*) Script de python realizado con ayuda de GenAI siguiendo esquema mostrado por el profesor en diapositivas (crusor, conn).
